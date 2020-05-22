@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The team behind the [SBT Resolver](https://github.com/heremaps/here-artifact-sbt-resolver) gratefully
+The team behind the [SBT resolver plugin](https://github.com/heremaps/here-artifact-sbt-resolver) gratefully
 accepts contributions via [pull requests](https://help.github.com/articles/about-pull-requests/) filed
 against the [GitHub project](https://github.com/heremaps/here-artifact-sbt-resolver/pulls).
 
@@ -10,6 +10,7 @@ against the [GitHub project](https://github.com/heremaps/here-artifact-sbt-resol
 
 [ScalaTest](http://www.scalatest.org/) is used for unit-testing.
 Unit tests for different modules can be found in `/src/test/scala`.
+
 Use the following commands to run the unit tests:
 
 - `sbt test` to run all tests
@@ -21,7 +22,7 @@ Use the following commands to run the unit tests:
 
 Styles conventions:
 
-- each Scala class should have a **Copyright Notice**:
+- Each Scala class should have a **Copyright Notice**:
 ```text
 /*
  * Copyright (C) 20<x>-20<y> HERE Europe B.V.
@@ -43,10 +44,10 @@ Styles conventions:
  */
 ```
 replace the `<x>` and `<y>` with numbers to denote the years in which the materials were created and modified.
-- the package name should start with `com.here.platform`
-- the folder structure should reflect the package name
-- basic Scala stylistic guidelines can be found [here](https://docs.scala-lang.org/style/).
-- it is recommended to use [Scalafmt](https://scalameta.org/scalafmt/) code formatter. The configuration is in `.scalafmt.conf` file.
+- The package name should start with `com.here.platform`
+- The folder structure should reflect the package name
+- Basic Scala stylistic guidelines can be found [here](https://docs.scala-lang.org/style/).
+- It is recommended to use [Scalafmt](https://scalameta.org/scalafmt/) code formatter. The configuration is in `.scalafmt.conf` file.
 
 You may use [IntelliJ IDEA scalfmt plugin](https://plugins.jetbrains.com/plugin/8236-scalafmt)
 or the following SBT commands available in the project:

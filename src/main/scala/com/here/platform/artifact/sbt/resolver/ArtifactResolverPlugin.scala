@@ -47,7 +47,7 @@ object ArtifactResolverPlugin extends AutoPlugin {
         // This means we haven't installed the handler, so install it
         case _: java.net.MalformedURLException =>
           info(
-            "Installing the here+// URLStreamHandler via java.net.URL.setURLStreamHandlerFactory")
+            "Installing the here+artifact-service// URLStreamHandler via java.net.URL.setURLStreamHandlerFactory")
           URL.setURLStreamHandlerFactory(HereURLStreamHandlerFactory)
       }
 

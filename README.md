@@ -29,10 +29,7 @@ Marketplace users can find instructions in the [Marketplace Consumer user guide]
 
 This version is compatible with:
  - Scala 2.11/2.12
- - SBT 1.2.8 or earlier
- - SBT 1.3.x is supported with a limitation, please disable [Coursier](https://get-coursier.io/) using the following flag:
- 
-       ThisBuild / useCoursier := false
+ - SBT 1.3.10 or earlier
 
 ## How to use it?
 This SBT resolver plugin is published on [Maven Central](https://search.maven.org/artifact/com.here.platform.artifact/sbt-resolver)

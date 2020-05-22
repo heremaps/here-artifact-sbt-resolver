@@ -1,0 +1,30 @@
+# Created by .ignore support plugin (hsz.mobi)
+### Scala template
+*.class
+*.log
+
+# use glob syntax
+syntax: glob
+
+# classic temporary files
+*~
+*.bak
+*.swp
+*.versionsBackup
+
+# idea project
+.idea
+*.iml
+
+# output of building
+target/
+
+# sbt's internal projects
+project/project/
+!project/project/*.sbt
+!project/project/*.scala
+
+# tmp folder used by the examples
+tmp
+
+.DS_Store

@@ -1,0 +1,4 @@
+script:
+  - set -e
+  - .travis/scripts/prepare_release.sh
+  - .travis/scripts/deploy.sh

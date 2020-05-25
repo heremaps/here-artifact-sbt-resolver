@@ -29,7 +29,7 @@ Marketplace users can find instructions in the [Marketplace Consumer user guide]
 
 This version is compatible with:
  - Scala 2.11/2.12
- - SBT 1.3.10 or earlier
+ - SBT 1.x
 
 ## How to use it?
 This SBT resolver plugin is published on [Maven Central](https://search.maven.org/artifact/com.here.platform.artifact/sbt-resolver)

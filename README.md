@@ -17,7 +17,7 @@ Go to [the HERE Developer portal](https://developer.here.com/products/open-locat
 
 ## Limitation
 The SBT resolver plugin is provided 'as is' and not officially part of Workspace or Marketplace.
-Support is only provided via GitHub and not via regular HERE product support channels.
+While there is no official support by HERE, you may still raise issues via GitHub. We may be able to help.
 
 ## Prerequisites
 To access the libraries and schemas from the HERE platform, you need a HERE Workspace and/or a HERE Marketplace account.

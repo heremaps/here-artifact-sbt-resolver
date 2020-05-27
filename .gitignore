@@ -15,6 +15,7 @@ syntax: glob
 # idea project
 .idea
 *.iml
+*.iws
 
 # output of building
 target/

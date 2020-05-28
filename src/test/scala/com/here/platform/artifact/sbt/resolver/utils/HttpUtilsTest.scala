@@ -19,11 +19,10 @@
 
 package com.here.platform.artifact.sbt.resolver.utils
 
-import org.mockito.MockitoSugar
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.BeforeAndAfter
 
-class HttpUtilsTest extends AnyFunSuite with BeforeAndAfter with MockitoSugar {
+class HttpUtilsTest extends AnyFunSuite with BeforeAndAfter {
 
   test("check parsing url") {
     val artifact = HttpUtils.toArtifact(

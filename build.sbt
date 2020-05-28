@@ -34,8 +34,7 @@ crossScalaVersions := Seq("2.11", "2.12")
 libraryDependencies ++= Seq(
   "com.here.account" % "here-oauth-client" % "0.4.20",
   "org.scalatest" %% "scalatest" % "3.1.1" % Test,
-  "org.scalamock" %% "scalamock" % "4.4.0" % Test,
-  "org.mockito" %% "mockito-scala" % "1.11.3" % Test
+  "org.scalamock" %% "scalamock" % "4.4.0" % Test
 )
 
 useGpgAgent := false

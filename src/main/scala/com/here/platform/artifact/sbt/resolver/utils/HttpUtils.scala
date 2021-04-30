@@ -20,6 +20,7 @@
 package com.here.platform.artifact.sbt.resolver.utils
 
 import java.io.{File, IOException, InputStream}
+import java.net.HttpURLConnection._
 import java.nio.file.{Files, StandardCopyOption}
 
 import org.apache.http.client.methods.{CloseableHttpResponse, HttpGet, HttpPut, HttpUriRequest}
@@ -85,10 +86,13 @@ object HttpUtils {
 
     val statusCode = response.getStatusLine.getStatusCode
     val content = EntityUtils.toString(response.getEntity)
-    if (statusCode == 200) {
-      validatedAndParseRegister(content)
+    statusCode match {
+      case HTTP_OK | HTTP_CREATED => validatedAndParseRegister(content)
+      case _ =>
+        throw RegisterException(
+          if (content.nonEmpty) content
+          else response.getStatusLine.getReasonPhrase)
     }
-    else throw RegisterException(content)
   }
 
   private def validatedAndParseRegister(content: String) = {

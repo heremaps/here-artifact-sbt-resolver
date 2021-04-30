@@ -20,6 +20,7 @@
 package com.here.platform.artifact.sbt.resolver
 
 import java.io.{File, InputStream}
+import java.net.HttpURLConnection._
 import java.net.URL
 import java.util.Date
 
@@ -63,6 +64,11 @@ final class ArtifactURLHandler extends URLHandler {
       val httpHead = new HttpHead(newUrl)
       val response = executeRequest(httpHead)
 
+      val available = response.getStatusLine.getStatusCode match {
+        case HTTP_OK | HTTP_NO_CONTENT => true
+        case _ => false
+      }
+
       val contentLength = Option(response.getFirstHeader("Content-Length"))
         .map(_.getValue.toLong)
         .orElse(Option(0.toLong))
@@ -73,7 +79,7 @@ final class ArtifactURLHandler extends URLHandler {
         .orElse(Option(new Date()))
         .get
 
-      new ArtifactURLInfo(true, contentLength, lastModified.getTime);
+      new ArtifactURLInfo(available, contentLength, lastModified.getTime)
     } catch {
       case _: Exception => UNAVAILABLE
     }

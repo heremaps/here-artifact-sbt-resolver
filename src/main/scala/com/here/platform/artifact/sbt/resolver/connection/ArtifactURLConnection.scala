@@ -24,9 +24,8 @@ import java.net.{HttpURLConnection, URL}
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
-import org.apache.http.client.methods.{HttpGet, HttpHead}
 import com.here.platform.artifact.sbt.resolver.utils.HttpUtils._
-import org.apache.http.Header
+import org.apache.http.client.methods.{CloseableHttpResponse, HttpGet, HttpHead}
 import org.apache.http.client.utils.DateUtils
 
 /**
@@ -34,36 +33,7 @@ import org.apache.http.client.utils.DateUtils
   */
 final class ArtifactURLConnection(url: URL) extends HttpURLConnection(url) {
 
-  private[this] var response: Option[ArtifactResponse] = None
-
-  private trait ArtifactResponse extends AutoCloseable {
-    def inputStream: Option[InputStream]
-    def metadata: Array[Header]
-  }
-
-  private case class HEADResponse(url: String) extends ArtifactResponse {
-    def inputStream: Option[InputStream] = None
-    def metadata: Array[Header] = {
-      val httpHead = new HttpHead(url)
-      val response = executeRequest(httpHead)
-      response.getAllHeaders
-    }
-    def close(): Unit = {}
-  }
-
-  private case class GETResponse(url: String) extends ArtifactResponse {
-    def inputStream: Option[InputStream] = {
-      val httpGet = new HttpGet(url)
-      val response = executeRequest(httpGet)
-      Some(response.getEntity.getContent)
-    }
-    def metadata: Array[Header] = {
-      val httpHead = new HttpHead(url)
-      val response = executeRequest(httpHead)
-      response.getAllHeaders
-    }
-    def close(): Unit = None
-  }
+  private[this] var response: Option[CloseableHttpResponse] = None
 
   override def connect(): Unit = {
     val artifact = toArtifact(url.toString)
@@ -71,8 +41,8 @@ final class ArtifactURLConnection(url: URL) extends HttpURLConnection(url) {
     val resolvedUrl = rewriteUrl(groupHrnPrefix, artifact)
 
     response = getRequestMethod.toLowerCase match {
-      case "head" => Option(HEADResponse(resolvedUrl))
-      case "get" => Option(GETResponse(resolvedUrl))
+      case "head" => Some(executeRequest(new HttpHead(resolvedUrl)))
+      case "get" => Some(executeRequest(new HttpGet(resolvedUrl)))
       case _ =>
         throw new IllegalArgumentException(s"Unexpected request method [$getRequestMethod].")
     }
@@ -87,7 +57,7 @@ final class ArtifactURLConnection(url: URL) extends HttpURLConnection(url) {
 
   override def getInputStream: InputStream = {
     if (!connected) connect()
-    response.flatMap { _.inputStream }.orNull
+    response.map(_.getEntity.getContent).orNull
   }
 
   override def getHeaderField(n: Int): String =
@@ -105,20 +75,20 @@ final class ArtifactURLConnection(url: URL) extends HttpURLConnection(url) {
     field.toLowerCase match {
       case "content-type" =>
         response.map {
-          _.metadata.find(_.getName.equalsIgnoreCase("content-type")).map(_.getValue).orNull
+          _.getAllHeaders.find(_.getName.equalsIgnoreCase("content-type")).map(_.getValue).orNull
         }.orNull
       case "content-encoding" =>
         response.map {
-          _.metadata.find(_.getName.equalsIgnoreCase("content-encoding")).map(_.getValue).orNull
+          _.getAllHeaders.find(_.getName.equalsIgnoreCase("content-encoding")).map(_.getValue).orNull
         }.orNull
       case "content-length" =>
         response.map {
-          _.metadata.find(_.getName.equalsIgnoreCase("content-length")).map(_.getValue).orNull
+          _.getAllHeaders.find(_.getName.equalsIgnoreCase("content-length")).map(_.getValue).orNull
         }.orNull
       case "last-modified" =>
         response
           .map {
-            _.metadata.find(_.getName.equalsIgnoreCase("last-modified")).map(_.getValue).orNull
+            _.getAllHeaders.find(_.getName.equalsIgnoreCase("last-modified")).map(_.getValue).orNull
           }
           .map {
             DateUtils.parseDate

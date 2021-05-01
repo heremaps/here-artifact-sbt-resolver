@@ -80,8 +80,8 @@ final class ArtifactURLConnection(url: URL) extends HttpURLConnection(url) {
         }.orNull
       case "last-modified" =>
         response
-          .map {
-            _.getAllHeaders.find(_.getName.equalsIgnoreCase("last-modified")).map(_.getValue).orNull
+          .flatMap {
+            _.getAllHeaders.find(_.getName.equalsIgnoreCase("last-modified")).map(_.getValue)
           }
           .map {
             DateUtils.parseDate

@@ -22,11 +22,11 @@ package com.here.platform.artifact.sbt.resolver.connection
 import java.io.InputStream
 import java.net.{HttpURLConnection, URL}
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
 
 import com.here.platform.artifact.sbt.resolver.utils.HttpUtils._
 import org.apache.http.client.methods.{HttpGet, HttpHead}
-import org.apache.http.client.utils.DateUtils
+import org.apache.http.client.utils.DateUtils.parseDate
 import org.apache.http.message.BasicLineFormatter.formatStatusLine
 
 /**
@@ -60,31 +60,11 @@ final class ArtifactURLConnection(url: URL) extends HttpURLConnection(url) {
     if (n == 0) formatStatusLine(response.getStatusLine, null)
     else super.getHeaderField(n)
 
-  override def getHeaderField(field: String): String = {
-    field.toLowerCase match {
-      case "content-type" =>
-        response.getAllHeaders.find(_.getName.equalsIgnoreCase("content-type")).map(_.getValue).orNull
-      case "content-encoding" =>
-        response.getAllHeaders.find(_.getName.equalsIgnoreCase("content-encoding")).map(_.getValue).orNull
-      case "content-length" =>
-        response.getAllHeaders.find(_.getName.equalsIgnoreCase("content-length")).map(_.getValue).orNull
-      case "last-modified" =>
-        response.getAllHeaders.find(_.getName.equalsIgnoreCase("last-modified")).map(_.getValue)
-          .map {
-            DateUtils.parseDate
-          }
-          .map {
-            _.toInstant.atOffset(ZoneOffset.UTC)
-          }
-          .map { _ =>
-            DateTimeFormatter.RFC_1123_DATE_TIME.format(_)
-          }
-          .map(_.toString())
-          .orNull
-
-      case _ => null // Should return null if no value for header
-    }
-  }
+  override def getHeaderField(field: String): String =
+    response.getAllHeaders.find(_.getName.equalsIgnoreCase(field)).map(_.getValue).map(v => field.toLowerCase match {
+      case "last-modified" => RFC_1123_DATE_TIME.format(parseDate(v).toInstant.atOffset(ZoneOffset.UTC))
+      case _ => v
+    }).orNull // Should return null if no value for header
 
   override def disconnect(): Unit = response.close()
 

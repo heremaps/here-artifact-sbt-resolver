@@ -25,7 +25,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 import com.here.platform.artifact.sbt.resolver.utils.HttpUtils._
-import org.apache.http.client.methods.{CloseableHttpResponse, HttpGet, HttpHead}
+import org.apache.http.client.methods.{HttpGet, HttpHead}
 import org.apache.http.client.utils.DateUtils
 import org.apache.http.message.BasicLineFormatter.formatStatusLine
 
@@ -34,55 +34,42 @@ import org.apache.http.message.BasicLineFormatter.formatStatusLine
   */
 final class ArtifactURLConnection(url: URL) extends HttpURLConnection(url) {
 
-  private[this] var response: Option[CloseableHttpResponse] = None
-
-  override def connect(): Unit = {
+  private[this] lazy val response = {
     val artifact = toArtifact(url.toString)
     val groupHrnPrefix = registerExists(artifact.groupId, artifact.artifactId).groupHrnPrefix
     val resolvedUrl = rewriteUrl(groupHrnPrefix, artifact)
 
-    response = getRequestMethod.toLowerCase match {
-      case "head" => Some(executeRequest(new HttpHead(resolvedUrl)))
-      case "get" => Some(executeRequest(new HttpGet(resolvedUrl)))
+    val response = executeRequest(getRequestMethod.toLowerCase match {
+      case "head" => new HttpHead(resolvedUrl)
+      case "get" => new HttpGet(resolvedUrl)
       case _ =>
         throw new IllegalArgumentException(s"Unexpected request method [$getRequestMethod].")
-    }
+    })
 
     connected = true
+    response
   }
 
-  override def getInputStream: InputStream = {
-    if (!connected) connect()
-    response.map(_.getEntity.getContent).orNull
-  }
+  override def connect(): Unit = ()
+
+  override def getInputStream: InputStream = response.getEntity.getContent
 
   override def getHeaderField(n: Int): String =
     // n == 0 means you want the HTTP Status Line
     // This is called from HttpURLConnection.getResponseCode()
-    if (n == 0 && response.isDefined) formatStatusLine(response.get.getStatusLine, null)
+    if (n == 0) formatStatusLine(response.getStatusLine, null)
     else super.getHeaderField(n)
 
   override def getHeaderField(field: String): String = {
-    if (!connected) connect()
-
     field.toLowerCase match {
       case "content-type" =>
-        response.map {
-          _.getAllHeaders.find(_.getName.equalsIgnoreCase("content-type")).map(_.getValue).orNull
-        }.orNull
+        response.getAllHeaders.find(_.getName.equalsIgnoreCase("content-type")).map(_.getValue).orNull
       case "content-encoding" =>
-        response.map {
-          _.getAllHeaders.find(_.getName.equalsIgnoreCase("content-encoding")).map(_.getValue).orNull
-        }.orNull
+        response.getAllHeaders.find(_.getName.equalsIgnoreCase("content-encoding")).map(_.getValue).orNull
       case "content-length" =>
-        response.map {
-          _.getAllHeaders.find(_.getName.equalsIgnoreCase("content-length")).map(_.getValue).orNull
-        }.orNull
+        response.getAllHeaders.find(_.getName.equalsIgnoreCase("content-length")).map(_.getValue).orNull
       case "last-modified" =>
-        response
-          .flatMap {
-            _.getAllHeaders.find(_.getName.equalsIgnoreCase("last-modified")).map(_.getValue)
-          }
+        response.getAllHeaders.find(_.getName.equalsIgnoreCase("last-modified")).map(_.getValue)
           .map {
             DateUtils.parseDate
           }
@@ -99,7 +86,7 @@ final class ArtifactURLConnection(url: URL) extends HttpURLConnection(url) {
     }
   }
 
-  override def disconnect(): Unit = response.foreach { _.close() }
+  override def disconnect(): Unit = response.close()
 
   override def usingProxy(): Boolean =
     sys.env.get("http.proxyHost").exists {

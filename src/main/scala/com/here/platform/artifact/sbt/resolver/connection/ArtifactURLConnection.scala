@@ -27,6 +27,7 @@ import java.time.format.DateTimeFormatter
 import com.here.platform.artifact.sbt.resolver.utils.HttpUtils._
 import org.apache.http.client.methods.{CloseableHttpResponse, HttpGet, HttpHead}
 import org.apache.http.client.utils.DateUtils
+import org.apache.http.message.BasicLineFormatter.formatStatusLine
 
 /**
   * Implements an HttpURLConnection for compatibility with Coursier (https://github.com/coursier/coursier)
@@ -47,11 +48,6 @@ final class ArtifactURLConnection(url: URL) extends HttpURLConnection(url) {
         throw new IllegalArgumentException(s"Unexpected request method [$getRequestMethod].")
     }
 
-    responseCode = if (response.isEmpty) 404 else 200
-
-    // Also set the responseMessage (an HttpURLConnection field) for better compatibility
-    responseMessage = statusMessageForCode(responseCode)
-
     connected = true
   }
 
@@ -63,11 +59,8 @@ final class ArtifactURLConnection(url: URL) extends HttpURLConnection(url) {
   override def getHeaderField(n: Int): String =
     // n == 0 means you want the HTTP Status Line
     // This is called from HttpURLConnection.getResponseCode()
-    if (n == 0 && responseCode != -1) {
-      s"HTTP/1.0 $responseCode ${statusMessageForCode(responseCode)}"
-    } else {
-      super.getHeaderField(n)
-    }
+    if (n == 0 && response.isDefined) formatStatusLine(response.get.getStatusLine, null)
+    else super.getHeaderField(n)
 
   override def getHeaderField(field: String): String = {
     if (!connected) connect()
@@ -113,12 +106,5 @@ final class ArtifactURLConnection(url: URL) extends HttpURLConnection(url) {
       _ != ""
     } || sys.env.get("https.proxyHost").exists {
       _ != ""
-    }
-
-  private def statusMessageForCode(code: Int): String =
-    code match {
-      case 200 => "OK"
-      case 404 => "Not Found"
-      case _ => "DUMMY"
     }
 }

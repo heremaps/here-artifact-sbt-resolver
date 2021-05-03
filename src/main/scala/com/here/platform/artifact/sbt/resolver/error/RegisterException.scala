@@ -19,4 +19,4 @@
 
 package com.here.platform.artifact.sbt.resolver.error
 
-final case class RegisterException(message: String) extends RuntimeException
+final case class RegisterException(message: String) extends RuntimeException(message)

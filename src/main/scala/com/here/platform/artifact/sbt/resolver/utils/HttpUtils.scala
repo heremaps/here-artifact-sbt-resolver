@@ -59,11 +59,9 @@ object HttpUtils {
     val response = executeRequest(httpRequest, Some(contentType))
 
     val statusCode = response.getStatusLine.getStatusCode
-    if (statusCode == 200) {
-      val content = EntityUtils.toString(response.getEntity)
-      validatedAndParseRegister(content)
-    }
-    else throw ArtifactNotFoundException()
+    val content = EntityUtils.toString(response.getEntity)
+    if (statusCode == HTTP_OK) validatedAndParseRegister(content)
+    else throw ArtifactNotFoundException(if (content.nonEmpty) content else response.getStatusLine.getReasonPhrase)
   }
 
   private[artifact] def registerArtifact(groupId: String, artifactId: String): RegisterResponse = {

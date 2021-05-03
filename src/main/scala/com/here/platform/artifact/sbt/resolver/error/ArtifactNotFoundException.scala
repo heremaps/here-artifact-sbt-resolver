@@ -19,4 +19,4 @@
 
 package com.here.platform.artifact.sbt.resolver.error
 
-final case class ArtifactNotFoundException() extends RuntimeException
+final case class ArtifactNotFoundException(message: String) extends RuntimeException(message)

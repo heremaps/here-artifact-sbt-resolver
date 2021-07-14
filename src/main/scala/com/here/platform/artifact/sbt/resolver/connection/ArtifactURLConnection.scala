@@ -21,12 +21,9 @@ package com.here.platform.artifact.sbt.resolver.connection
 
 import java.io.InputStream
 import java.net.{HttpURLConnection, URL}
-import java.time.{Instant, ZoneOffset}
-import java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
 
 import com.here.platform.artifact.sbt.resolver.utils.HttpUtils._
 import org.apache.http.client.methods.{HttpGet, HttpHead}
-import org.apache.http.client.utils.DateUtils.parseDate
 import org.apache.http.message.BasicLineFormatter.formatStatusLine
 
 /**
@@ -60,12 +57,7 @@ final class ArtifactURLConnection(url: URL) extends HttpURLConnection(url) {
     if (n == 0) formatStatusLine(response.getStatusLine, null)
     else super.getHeaderField(n)
 
-  override def getHeaderField(field: String): String =
-    response.getAllHeaders.find(_.getName.equalsIgnoreCase(field)).map(_.getValue).map(v => field.toLowerCase match {
-      case "last-modified" if v.contains("Jan 1970") => // service likely confused milliseconds with seconds
-        RFC_1123_DATE_TIME.format(Instant.ofEpochSecond(parseDate(v).getTime.toInt).atOffset(ZoneOffset.UTC))
-      case _ => v
-    }).orNull // Should return null if no value for header
+  override def getHeaderField(field: String): String = Option(response.getFirstHeader(field)).map(_.getValue).orNull
 
   override def disconnect(): Unit = response.close()
 

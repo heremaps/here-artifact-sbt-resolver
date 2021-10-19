@@ -54,7 +54,7 @@ object Credentials {
     val homeDir = System.getProperty(userHomeSysProp)
     val defaultPath = Paths.get(homeDir, dotHereDir, credentialsFileName)
 
-    val systemPropertyFile = Option(System.getenv(credentialsEnvName)).orElse(Option(System.getProperty(credentialsPropertyName)))
+    val systemPropertyFile = Option(System.getProperty(credentialsPropertyName)).orElse(Option(System.getenv(credentialsEnvName)))
     val path = systemPropertyFile.map(Paths.get(_)).getOrElse(defaultPath)
     parsePropertyFile(path.toFile)
   }

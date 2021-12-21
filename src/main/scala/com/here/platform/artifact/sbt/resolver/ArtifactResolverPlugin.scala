@@ -31,7 +31,7 @@ object ArtifactResolverPlugin extends AutoPlugin {
   override def trigger: PluginTrigger = allRequirements
 
   override def projectSettings: Seq[Setting[_]] = Seq(
-    onLoad in Global := (onLoad in Global).value andThen { state =>
+    onLoad in Global :=  { state: State =>
       def info: String => Unit = state.log.info(_)
 
       def debug: String => Unit = state.log.debug(_)
@@ -72,7 +72,7 @@ object ArtifactResolverPlugin extends AutoPlugin {
       dispatcher.setDownloader("here+artifact-service", new ArtifactURLHandler)
 
       state
-    }
+    } andThen (onLoad in Global).value
   )
 }
 

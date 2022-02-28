@@ -19,16 +19,19 @@
 
 package com.here.platform.artifact.sbt.resolver.utils
 
+import com.here.platform.artifact.sbt.resolver.XRateLimitServiceUnavailableRetryStrategy
+
 import java.io.{File, IOException, InputStream}
 import java.net.HttpURLConnection._
 import java.nio.file.{Files, StandardCopyOption}
-
 import org.apache.http.client.methods.{CloseableHttpResponse, HttpGet, HttpPut, HttpUriRequest}
 import org.apache.ivy.util.Message
 import com.here.platform.artifact.sbt.resolver.auth.HereAuth
 import com.here.platform.artifact.sbt.resolver.error.{ArtifactNotFoundException, RegisterException}
 import org.apache.http.entity.ByteArrayEntity
 import org.apache.http.util.EntityUtils
+import org.apache.http.impl.client.HttpClientBuilder
+
 
 import scala.util.parsing.json.JSON
 
@@ -154,8 +157,9 @@ object HttpUtils {
     httpRequest.addHeader("Accept-Encoding", "gzip")
     contentType.foreach(httpRequest.addHeader("Content-Type", _))
 
-    import org.apache.http.impl.client.HttpClientBuilder
-    val client = HttpClientBuilder.create.build
+    val client = HttpClientBuilder.create
+      .setServiceUnavailableRetryStrategy(new XRateLimitServiceUnavailableRetryStrategy)
+      .build
     val response = client.execute(httpRequest)
     response
   }

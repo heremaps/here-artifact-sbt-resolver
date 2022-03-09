@@ -45,9 +45,8 @@ class XRateLimitServiceUnavailableRetryStrategyTest extends AnyFunSuite with One
 
   test("test retry interval is used from XRateLimitReset header") {
     val headerMock = mock[Header]
-    (httpResponse.getFirstHeader _).expects(strategy.X_RATE_LIMIT_RESET_HEADER).returning(headerMock)
+    (httpResponse.getFirstHeader _).expects(strategy.XRateLimitResetHeader).returning(headerMock)
     (headerMock.getValue _).expects().returning("99")
-    (httpResponse.containsHeader _).expects(strategy.X_RATE_LIMIT_RESET_HEADER).returning(true)
     strategy.retryRequest(httpResponse, 1, httpContext)
     val result = strategy.getRetryInterval
     result should equal (99000)
@@ -55,14 +54,12 @@ class XRateLimitServiceUnavailableRetryStrategyTest extends AnyFunSuite with One
 
   test("test retry interval is used from XRateLimitReset header when RetryAfter header present") {
     val headerMockXrateLimit = mock[Header]
-    (httpResponse.getFirstHeader _).expects(strategy.X_RATE_LIMIT_RESET_HEADER).returning(headerMockXrateLimit)
+    (httpResponse.getFirstHeader _).expects(strategy.XRateLimitResetHeader).returning(headerMockXrateLimit)
     (headerMockXrateLimit.getValue _).expects().returning("99")
-    (httpResponse.containsHeader _).expects(strategy.X_RATE_LIMIT_RESET_HEADER).returning(true)
 
     val headerRetryAfter = mock[Header]
-    (httpResponse.getFirstHeader _).stubs(strategy.RETRY_AFTER_HEADER).returning(headerRetryAfter)
+    (httpResponse.getFirstHeader _).stubs(strategy.RetryAfterHeader).returning(headerRetryAfter)
     (headerRetryAfter.getValue _).stubs().returning("1")
-    (httpResponse.containsHeader _).stubs(strategy.RETRY_AFTER_HEADER).returning(true)
 
     strategy.retryRequest(httpResponse, 1, httpContext)
     val result = strategy.getRetryInterval
@@ -71,10 +68,9 @@ class XRateLimitServiceUnavailableRetryStrategyTest extends AnyFunSuite with One
 
   test("test retry interval is used from RetryAfter header") {
     val headerRetryAfter = mock[Header]
-    (httpResponse.getFirstHeader _).expects(strategy.RETRY_AFTER_HEADER).returning(headerRetryAfter)
-    (headerRetryAfter.getValue _).expects().returning("1")
-
-    (httpResponse.containsHeader _).expects(strategy.X_RATE_LIMIT_RESET_HEADER).returning(false)
+    (httpResponse.getFirstHeader _).stubs(strategy.RetryAfterHeader).returning(headerRetryAfter)
+    (headerRetryAfter.getValue _).stubs().returning("1")
+    (httpResponse.getFirstHeader _).stubs(strategy.XRateLimitResetHeader).returning(null)
 
     strategy.retryRequest(httpResponse, 1, httpContext)
     val result = strategy.getRetryInterval
@@ -83,16 +79,25 @@ class XRateLimitServiceUnavailableRetryStrategyTest extends AnyFunSuite with One
 
   test("test default retry interval is used when XRateLimitReset header have non numeric value") {
     val headerMockXrateLimit = mock[Header]
-    (httpResponse.getFirstHeader _).expects(strategy.X_RATE_LIMIT_RESET_HEADER).returning(headerMockXrateLimit)
+    (httpResponse.getFirstHeader _).expects(strategy.XRateLimitResetHeader).returning(headerMockXrateLimit)
     (headerMockXrateLimit.getValue _).expects().returning("asd")
-    (httpResponse.containsHeader _).expects(strategy.X_RATE_LIMIT_RESET_HEADER).returning(true)
+    strategy.retryRequest(httpResponse, 1, httpContext)
+    val result = strategy.getRetryInterval
+    result should equal (5000)
+  }
+
+  test("test default retry interval is used when XRateLimitReset header have non numeric value with numeric prefix") {
+    val headerMockXrateLimit = mock[Header]
+    (httpResponse.getFirstHeader _).expects(strategy.XRateLimitResetHeader).returning(headerMockXrateLimit)
+    (headerMockXrateLimit.getValue _).expects().returning("123asd")
     strategy.retryRequest(httpResponse, 1, httpContext)
     val result = strategy.getRetryInterval
     result should equal (5000)
   }
 
   test("test default retry interval is used when exception occurred") {
-    (httpResponse.containsHeader _).expects(strategy.X_RATE_LIMIT_RESET_HEADER).throwing(new RuntimeException)
+    val headerMockXrateLimit = mock[Header]
+    (httpResponse.getFirstHeader _).stubs(strategy.XRateLimitResetHeader).throwing(new RuntimeException("Stubbed exception"))
     strategy.retryRequest(httpResponse, 1, httpContext)
     val result = strategy.getRetryInterval
     result should equal (5000)

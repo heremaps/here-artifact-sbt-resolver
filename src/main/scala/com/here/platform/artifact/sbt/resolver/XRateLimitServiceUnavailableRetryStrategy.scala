@@ -21,10 +21,11 @@ package com.here.platform.artifact.sbt.resolver
 
 import org.apache.http.client.ServiceUnavailableRetryStrategy
 import org.apache.http.protocol.HttpContext
-import org.apache.http.{HttpResponse, HttpStatus}
+import org.apache.http.{Header, HttpResponse, HttpStatus}
 import org.apache.ivy.util.Message
 
-import java.util.regex.Pattern
+import scala.util.matching.Regex
+import scala.util.{Failure, Try}
 
 /**
   * An implementation of the {@link ServiceUnavailableRetryStrategy} interface.
@@ -35,66 +36,71 @@ import java.util.regex.Pattern
   */
 class XRateLimitServiceUnavailableRetryStrategy extends ServiceUnavailableRetryStrategy {
 
-  private val SC_TOO_MANY_REQUESTS = 429
+  val ScTooManyRequests = 429
 
   /**
     * Default delay between retries. Applied only if X-RateLimit-Reset and Retry-After headers are absent in response
     */
-  private val DEFAULT_RETRY_INTERVAL_MS = 5000
+  val DefaultRetryIntervalMs = 5000
 
   /**
     * Maximum retries count
     */
-  private val MAX_RETRIES = 5
+  val MaxRetries = 5
 
   /**
     * The response HTTP header indicates how long the user agent should wait before making a follow-up request.
     * Custom header for Artifact Service. This should be same as the Retry-After header
     */
-  final val X_RATE_LIMIT_RESET_HEADER = "X-RateLimit-Reset"
+  val XRateLimitResetHeader = "X-RateLimit-Reset"
 
   /**
     * The response HTTP header indicates how long the user agent should wait before making a follow-up request.
     * Standard header for Artifact Service
     */
-  final val RETRY_AFTER_HEADER = "Retry-After"
+  val RetryAfterHeader = "Retry-After"
 
-  private val DIGIT_PATTERN = Pattern.compile("\\d+")
+  val DigitPattern: Regex = "^\\d+$".r
 
-  private val currentResponse = new ThreadLocal[HttpResponse]
+  val currentResponse = new ThreadLocal[HttpResponse]
 
   override def retryRequest(response: HttpResponse, executionCount: Int, context: HttpContext): Boolean = {
     currentResponse.set(response)
     val statusCode = response.getStatusLine.getStatusCode
     val retryableStatusCode = statusCode == HttpStatus.SC_REQUEST_TIMEOUT ||
-      statusCode == SC_TOO_MANY_REQUESTS ||
+      statusCode == ScTooManyRequests ||
       statusCode == HttpStatus.SC_INTERNAL_SERVER_ERROR ||
       statusCode == HttpStatus.SC_BAD_GATEWAY ||
       statusCode == HttpStatus.SC_SERVICE_UNAVAILABLE ||
       statusCode == HttpStatus.SC_GATEWAY_TIMEOUT
-    executionCount <= MAX_RETRIES && retryableStatusCode
+    executionCount <= MaxRetries && retryableStatusCode
   }
 
   override def getRetryInterval: Long = {
-    val httpResponse = currentResponse.get
-    if (httpResponse != null) try {
-      val waitHeader = if (httpResponse.containsHeader(X_RATE_LIMIT_RESET_HEADER))
-        httpResponse.getFirstHeader(X_RATE_LIMIT_RESET_HEADER)
-      else
-        httpResponse.getFirstHeader(RETRY_AFTER_HEADER)
-      if (waitHeader != null) {
-        val value = waitHeader.getValue
-        if (value != null && DIGIT_PATTERN.matcher(value).matches) {
-          Message.info(s"Request is failed with code ${httpResponse.getStatusLine.getStatusCode}. Retrying in ${value} seconds")
-          return value.toLong * 1000
-        } else
-          Message.warn(s"Header ${waitHeader.getName} have value ${waitHeader.getValue} but numeric value expected")
-      }
-    } catch {
-      case e: Exception =>
-        Message.warn(s"Unexpected exception occurred. Fallback to standard retry logic. ${e}")
-    }
-    DEFAULT_RETRY_INTERVAL_MS
+    val evaluatedRetryInterval = for {
+      httpResponse <- Option(currentResponse.get)
+      waitHeader <- getWaitHeader(httpResponse)
+      parsedInterval <- parseLongValueFromHeader(waitHeader)
+      parsedInterval <- logRetry(httpResponse, parsedInterval)
+    } yield parsedInterval
+    evaluatedRetryInterval.getOrElse(DefaultRetryIntervalMs)
+  }
+
+  def getWaitHeader(response: HttpResponse): Option[Header] = Try(
+    Option(response.getFirstHeader(XRateLimitResetHeader)).orElse(Option(response.getFirstHeader(RetryAfterHeader)))
+  ).recoverWith {
+    case e => Message.warn("Unexpected exception occurred. Fallback to standard retry logic"); Failure(e)
+  }.toOption.flatten
+
+  def parseLongValueFromHeader(header: Header): Option[Long] = Try {
+    Option(header.getValue).flatMap(DigitPattern.findFirstIn(_)).map(_.toLong * 1000)
+  }.recoverWith {
+    case e => Message.warn(s"Could not parse value [${header.getValue}] from header [${header.getName}]"); Failure(e)
+  }.toOption.flatten
+
+  def logRetry(httpResponse: HttpResponse, retryInterval: Long): Option[Long] = {
+    Message.info(s"Request is failed with code ${httpResponse.getStatusLine.getStatusCode}. Retrying in ${retryInterval} milliseconds")
+    Some(retryInterval)
   }
 
 }

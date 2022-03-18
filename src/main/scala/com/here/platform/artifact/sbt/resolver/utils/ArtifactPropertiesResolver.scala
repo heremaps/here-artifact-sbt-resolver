@@ -34,7 +34,7 @@ object ArtifactPropertiesResolver {
   private val PROD_ARTIFACT_SERVICE_URL =
     "https://artifact.api.platform.here.com/v1/artifact"
   private val STAGING_ARTIFACT_SERVICE_URL =
-    "https://artifact.api.platform.in.here.com/v1/artifact"
+    "https://artifact.api.platform.sit.here.com/v1/artifact"
   private val CN_PROD_ARTIFACT_SERVICE_URL =
     "https://artifact.api.platform.hereolp.cn/v1/artifact"
   private val CN_STAGING_ARTIFACT_SERVICE_URL =

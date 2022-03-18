@@ -29,7 +29,7 @@ class ArtifactPropertiesResolverTest extends UnitSpec {
         ArtifactPropertiesResolver.resolveArtifactServiceUrl(
           "https://account.api.here.com/oauth2/token"))
     assert(
-      "https://artifact.api.platform.in.here.com/v1/artifact" ==
+      "https://artifact.api.platform.sit.here.com/v1/artifact" ==
         ArtifactPropertiesResolver.resolveArtifactServiceUrl(
           "https://stg.account.api.here.com/oauth2/token"))
     assert(

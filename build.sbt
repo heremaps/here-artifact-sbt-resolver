@@ -38,6 +38,7 @@ libraryDependencies ++= Seq(
 )
 
 useGpgAgent := false
+useGpgPinentry := true
 sonatypeProfileName := "com.here"
 publishMavenStyle := true
 publishTo := {

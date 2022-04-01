@@ -2,7 +2,7 @@
 set -ev
 
 # Prepare release
-git config user.name "Travis CI"
+git config user.name "GitHub Action"
 git config user.email "ARTIFACT_SERVICE_SUPPORT@here.com"
 
 PREVIOUS_RELEASE_TAG=$(git describe --abbrev=0)
@@ -14,5 +14,4 @@ else
   exit 1
 fi
 
-git remote add origin-travis https://${GITHUB_TOKEN}@${GITHUB_REPO}
-git push origin-travis --tags
+git push origin --tags

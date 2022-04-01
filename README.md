@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/heremaps/here-artifact-sbt-resolver.svg?token=qChpbefwyQKBzgjbCQ4s&branch=master)](https://travis-ci.com/heremaps/here-artifact-sbt-resolver)
+[![Build Status](https://github.com/heremaps/here-artifact-sbt-resolver/actions/workflows/release.yml/badge.svg)](https://github.com/heremaps/here-artifact-sbt-resolver/actions?query=workflow%3ARelease+branch%3Amaster)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.here.platform.artifact/sbt-resolver/badge.svg)](https://search.maven.org/artifact/com.here.platform.artifact/sbt-resolver)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
@@ -78,6 +78,6 @@ export JAVA_OPTS="-Dhttp.proxyHost=PROXY_HOST -Dhttp.proxyPort=PROXY_PORT -Dhttp
 ```
 
 ## License
-Copyright (C) 2019-2020 HERE Europe B.V.
+Copyright (C) 2019-2022 HERE Europe B.V.
 
 Unless otherwise noted in `LICENSE` files for specific files or directories, the [LICENSE](LICENSE) in the root applies to all content in this repository.

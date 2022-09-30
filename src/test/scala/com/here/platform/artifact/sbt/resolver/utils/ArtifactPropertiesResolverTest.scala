@@ -20,6 +20,9 @@
 package com.here.platform.artifact.sbt.resolver.utils
 
 import com.here.platform.artifact.sbt.resolver.UnitSpec
+import org.apache.http.StatusLine
+import org.apache.http.client.methods.CloseableHttpResponse
+import org.apache.http.entity.StringEntity
 
 class ArtifactPropertiesResolverTest extends UnitSpec {
 
@@ -27,25 +30,34 @@ class ArtifactPropertiesResolverTest extends UnitSpec {
     assert(
       "https://artifact.api.platform.here.com/v1/artifact" ==
         ArtifactPropertiesResolver.resolveArtifactServiceUrl(
-          "https://account.api.here.com/oauth2/token"))
+          "https://account.api.here.com/oauth2/token", _ => mockLookupAPIResponse("https://artifact.api.platform.here.com/v1")))
     assert(
       "https://artifact.api.platform.sit.here.com/v1/artifact" ==
         ArtifactPropertiesResolver.resolveArtifactServiceUrl(
-          "https://stg.account.api.here.com/oauth2/token"))
+          "https://stg.account.api.here.com/oauth2/token", _ => mockLookupAPIResponse("https://artifact.api.platform.sit.here.com/v1")))
     assert(
       "https://artifact.api.platform.hereolp.cn/v1/artifact" ==
         ArtifactPropertiesResolver.resolveArtifactServiceUrl(
-          "https://elb.cn-northwest-1.account.hereapi.cn/oauth2/token"))
+          "https://elb.cn-northwest-1.account.hereapi.cn/oauth2/token", _ => mockLookupAPIResponse("https://artifact.api.platform.hereolp.cn/v1")))
     assert(
       "https://artifact.api.platform.in.hereolp.cn/v1/artifact" ==
         ArtifactPropertiesResolver.resolveArtifactServiceUrl(
-          "https://elb.cn-northwest-1.account.sit.hereapi.cn/oauth2/token")
+          "https://elb.cn-northwest-1.account.sit.hereapi.cn/oauth2/token", _ => mockLookupAPIResponse("https://artifact.api.platform.in.hereolp.cn/v1"))
     )
   }
 
   it should "throws an exception if no mapping found" in {
     assertThrows[IllegalArgumentException] {
-      ArtifactPropertiesResolver.resolveArtifactServiceUrl("http://unknown/url")
+      ArtifactPropertiesResolver.resolveArtifactServiceUrl("http://unknown/url", _ => mock[CloseableHttpResponse])
     }
+  }
+
+  private def mockLookupAPIResponse(mockedUrl: String): CloseableHttpResponse = {
+    val response = mock[CloseableHttpResponse]
+    val statusLineMock = mock[StatusLine]
+    (statusLineMock.getStatusCode _).stubs().returning(200)
+    (response.getStatusLine _).stubs().returning(statusLineMock)
+    (response.getEntity _).stubs().returning(new StringEntity("[{\"baseURL\":\"" + mockedUrl + "\"}]"))
+    response
   }
 }

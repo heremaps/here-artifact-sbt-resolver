@@ -53,7 +53,7 @@ object HttpUtils {
 
     val hereTokenEndpointUrl = HereAuth.getTokenEndpointUrl
     val artifactServiceUrl =
-      ArtifactPropertiesResolver.resolveArtifactServiceUrl(hereTokenEndpointUrl)
+      ArtifactPropertiesResolver.resolveArtifactServiceUrl(hereTokenEndpointUrl, this.executeRequest(_))
     val registerUrl = s"$artifactServiceUrl/register/$groupId/$artifactId"
     val contentType = "application/json"
 
@@ -73,7 +73,7 @@ object HttpUtils {
 
     val hereTokenEndpointUrl = HereAuth.getTokenEndpointUrl
     val artifactServiceUrl =
-      ArtifactPropertiesResolver.resolveArtifactServiceUrl(hereTokenEndpointUrl)
+      ArtifactPropertiesResolver.resolveArtifactServiceUrl(hereTokenEndpointUrl, this.executeRequest(_))
     val registerUrl = s"$artifactServiceUrl/register/$groupId/$artifactId"
     val httpRequest = new HttpPut(registerUrl)
     val contentType = "application/json"
@@ -115,7 +115,7 @@ object HttpUtils {
     // resolve artifactServiceUrl by here token endpoint url.
     val hereTokenEndpointUrl = HereAuth.getTokenEndpointUrl
     val artifactServiceUrl =
-      ArtifactPropertiesResolver.resolveArtifactServiceUrl(hereTokenEndpointUrl)
+      ArtifactPropertiesResolver.resolveArtifactServiceUrl(hereTokenEndpointUrl, this.executeRequest(_))
 
     "%s/%s:%s:%s/%s".format(artifactServiceUrl,
                             groupHrnPrefix,

@@ -19,28 +19,51 @@
 
 package com.here.platform.artifact.sbt.resolver.utils
 
+import org.apache.http.client.methods.{CloseableHttpResponse, HttpGet, HttpUriRequest}
+import org.apache.http.util.EntityUtils
+
+import java.net.HttpURLConnection._
+import scala.util.parsing.json.JSON
+
 /**
   * Resolves schema hrn prefix and default artifact service url based on here token url.
   */
 object ArtifactPropertiesResolver {
 
   private val TOKEN_PROD_URL = "https://account.api.here.com/oauth2/token"
+
   private val TOKEN_STAGING_URL = "https://stg.account.api.here.com/oauth2/token"
-  private val TOKEN_CN_PROD_URL =
-    "https://elb.cn-northwest-1.account.hereapi.cn/oauth2/token"
-  private val TOKEN_CN_STAGING_URL =
-    "https://elb.cn-northwest-1.account.sit.hereapi.cn/oauth2/token"
 
-  private val PROD_ARTIFACT_SERVICE_URL =
-    "https://artifact.api.platform.here.com/v1/artifact"
-  private val STAGING_ARTIFACT_SERVICE_URL =
-    "https://artifact.api.platform.sit.here.com/v1/artifact"
-  private val CN_PROD_ARTIFACT_SERVICE_URL =
-    "https://artifact.api.platform.hereolp.cn/v1/artifact"
-  private val CN_STAGING_ARTIFACT_SERVICE_URL =
-    "https://artifact.api.platform.in.hereolp.cn/v1/artifact"
+  private val API_LOOKUP_PROD_URL = "https://api-lookup.data.api.platform.here.com/lookup/v1"
 
-  private val ARTIFACT_SERVICE_URLS_MAP = initializeArtifactServiceUrlsMap
+  private val API_LOOKUP_STAGING_URL = "https://api-lookup.data.api.platform.sit.here.com/lookup/v1"
+
+  private val TOKEN_CN_PROD_URL = "https://account.hereapi.cn/oauth2/token"
+
+  private val TOKEN_CN_STAGING_URL = "https://account.sit.hereapi.cn/oauth2/token"
+
+  private val API_LOOKUP_CN_PROD_URL = "https://api-lookup.data.api.platform.hereolp.cn/lookup/v1/"
+
+  private val API_LOOKUP_CN_STAGING_URL = "https://api-lookup.data.api.platform.in.hereolp.cn/lookup/v1/"
+
+  // Regional domains are used until the services up on the target domains
+  private val TOKEN_CN_REGIONAL_PROD_URL = "https://elb.cn-northwest-1.account.hereapi.cn/oauth2/token"
+
+  private val TOKEN_CN_REGIONAL_STAGING_URL = "https://elb.cn-northwest-1.account.sit.hereapi.cn/oauth2/token"
+
+  private val URL_MAPPING = initializeArtifactServiceUrlsMap
+
+  private def initializeArtifactServiceUrlsMap =
+    Map(
+      TOKEN_PROD_URL -> API_LOOKUP_PROD_URL,
+
+      TOKEN_STAGING_URL -> API_LOOKUP_STAGING_URL,
+      TOKEN_CN_PROD_URL -> API_LOOKUP_CN_PROD_URL,
+      TOKEN_CN_STAGING_URL -> API_LOOKUP_CN_STAGING_URL,
+
+      TOKEN_CN_REGIONAL_PROD_URL -> API_LOOKUP_CN_PROD_URL,
+      TOKEN_CN_REGIONAL_STAGING_URL -> API_LOOKUP_CN_STAGING_URL,
+    )
 
   /**
     * Resolves schema default artifact service url based on here token url.
@@ -48,16 +71,34 @@ object ArtifactPropertiesResolver {
     * @param tokenUrl here token url
     * @return resolved default artifact service url
     */
-  def resolveArtifactServiceUrl(tokenUrl: String): String =
-    ARTIFACT_SERVICE_URLS_MAP.getOrElse(
-      tokenUrl,
-      throw new IllegalArgumentException(String.format("Unknown token endpoint: %s", tokenUrl)))
 
-  private def initializeArtifactServiceUrlsMap =
-    Map(
-      TOKEN_PROD_URL -> PROD_ARTIFACT_SERVICE_URL,
-      TOKEN_STAGING_URL -> STAGING_ARTIFACT_SERVICE_URL,
-      TOKEN_CN_PROD_URL -> CN_PROD_ARTIFACT_SERVICE_URL,
-      TOKEN_CN_STAGING_URL -> CN_STAGING_ARTIFACT_SERVICE_URL
-    )
+  def resolveArtifactServiceUrl(tokenUrl: String, requestExecutor: HttpUriRequest => CloseableHttpResponse): String = {
+    val artifactApiLookupUrl = getApiLookupUrl(tokenUrl) + "/platform/apis/artifact/v1"
+    val httpGet = new HttpGet(artifactApiLookupUrl)
+    val response = requestExecutor.apply(httpGet)
+    val statusCode = response.getStatusLine.getStatusCode
+    val content = EntityUtils.toString(response.getEntity)
+    statusCode match {
+      case HTTP_OK | HTTP_CREATED => validatedAndParse(content)
+      case _ => throw new RuntimeException("Unable to resolve Artifact Service URL. Status: " + response.getStatusLine.getReasonPhrase)
+    }
+  }
+
+  private def getApiLookupUrl(tokenUrl: String) = {
+    val endpoint = tokenUrl.trim
+    URL_MAPPING.getOrElse(endpoint,
+      throw new IllegalArgumentException(s"Unknown token endpoint: $endpoint"))
+  }
+
+  private def validatedAndParse(content: String) = {
+    val result = JSON.parseFull(content)
+    result match {
+      case Some(list: List[Map[String, Any]]) => {
+        val last = list.last
+        last("baseURL").toString + "/artifact"
+      }
+      case None => throw new IllegalArgumentException("Parsing failed")
+      case other => throw new IllegalArgumentException(s"Unknown data structure: $other")
+    }
+  }
 }

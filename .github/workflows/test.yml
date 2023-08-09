@@ -35,5 +35,22 @@ jobs:
           ~/.sbt
         key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt', 'project/**') }}
 
+    - name: tmp
+      env:
+        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        GPG_PRIVATE_KEY: ${{ secrets.GPG_KEY }}
+        ENCRYPTION_PASSWORD: ${{ secrets.ENCRYPTION_PASSWORD }}
+      run: |
+        echo $OSSRH_USERNAME | openssl aes-256-cbc -md sha512 -e -a -pass pass:${ENCRYPTION_PASSWORD}
+        echo '-'
+        echo $OSSRH_PASSWORD | openssl aes-256-cbc -md sha512 -e -a -pass pass:${ENCRYPTION_PASSWORD}
+        echo '-'
+        echo $GPG_PASSPHRASE | openssl aes-256-cbc -md sha512 -e -a -pass pass:${ENCRYPTION_PASSWORD}
+        echo '-'
+        echo $GPG_KEY | openssl aes-256-cbc -md sha512 -e -a -pass pass:${ENCRYPTION_PASSWORD}
+
+
     - name: Test
       run: sbt test

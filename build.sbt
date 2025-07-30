@@ -1,6 +1,5 @@
 import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 import sbtrelease.Version
-import xerial.sbt.Sonatype.sonatypeCentralHost
 
 name := "sbt-resolver"
 
@@ -40,12 +39,14 @@ libraryDependencies ++= Seq(
 
 useGpgAgent := false
 useGpgPinentry := true
-sonatypeProfileName := "com.here"
 publishMavenStyle := true
 sbtPluginPublishLegacyMavenStyle := false
-sonatypeCredentialHost := sonatypeCentralHost
-publishTo := sonatypePublishToBundle.value
 pomIncludeRepository := { _ => false }
+publishTo := {
+  val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
+  if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)
+  else localStaging.value
+}
 
 pomExtra :=
   <licenses>

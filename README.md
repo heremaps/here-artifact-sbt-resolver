@@ -42,8 +42,17 @@ so you can conveniently use it from your project.
 The `sbt-resolver` plugin can be registered by adding an entry to `projects/plugins.sbt` file as follows:
 
 
-    addSbtPlugin("com.here.platform.artifact" % "sbt-resolver" % sbtResolverVersion)
+    addSbtPlugin("com.here.platform.artifact" %% "sbt-resolver" % sbtResolverVersion)
 
+
+If you're encountering issues or using earlier versions, you might have to explicitly declare the Maven Central repository:
+```scala
+resolvers += Resolver.url(
+  "...",
+  url("..."))(
+  Patterns("[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]", 
+  "[organisation]/[module]/[revision]/[artifact]_[scalaVersion]_[sbtVersion]-[revision](-[classifier]).[ext]") )
+```
 
 For example, to fetch the HERE Map Content - Topology Geometry - Protocol Buffers schema and the related Java and Scala bindings set the following dependencies:
 

@@ -48,8 +48,8 @@ The `sbt-resolver` plugin can be registered by adding an entry to `projects/plug
 If you're encountering issues or using earlier versions, you might have to explicitly declare the Maven Central repository:
 ```scala
 resolvers += Resolver.url(
-  "...",
-  url("..."))(
+  "MAVEN_CENTRAL",
+  url("https://repo.maven.apache.org/maven2"))(
   Patterns("[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]", 
   "[organisation]/[module]/[revision]/[artifact]_[scalaVersion]_[sbtVersion]-[revision](-[classifier]).[ext]") )
 ```

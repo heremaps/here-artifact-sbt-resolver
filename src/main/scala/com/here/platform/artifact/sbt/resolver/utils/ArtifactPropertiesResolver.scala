@@ -23,11 +23,10 @@ import org.apache.http.client.methods.{CloseableHttpResponse, HttpGet, HttpUriRe
 import org.apache.http.util.EntityUtils
 
 import java.net.HttpURLConnection._
-import scala.util.parsing.json.JSON
 
 /**
-  * Resolves schema hrn prefix and default artifact service url based on here token url.
-  */
+ * Resolves schema hrn prefix and default artifact service url based on here token url.
+ */
 object ArtifactPropertiesResolver {
 
   private val TOKEN_PROD_URL = "https://account.api.here.com/oauth2/token"
@@ -66,11 +65,11 @@ object ArtifactPropertiesResolver {
     )
 
   /**
-    * Resolves schema default artifact service url based on here token url.
-    *
-    * @param tokenUrl here token url
-    * @return resolved default artifact service url
-    */
+   * Resolves schema default artifact service url based on here token url.
+   *
+   * @param tokenUrl here token url
+   * @return resolved default artifact service url
+   */
 
   def resolveArtifactServiceUrl(tokenUrl: String, requestExecutor: HttpUriRequest => CloseableHttpResponse): String = {
     val artifactApiLookupUrl = getApiLookupUrl(tokenUrl) + "/platform/apis/artifact/v1"
@@ -91,14 +90,7 @@ object ArtifactPropertiesResolver {
   }
 
   private def validatedAndParse(content: String) = {
-    val result = JSON.parseFull(content)
-    result match {
-      case Some(list: List[Map[String, Any]]) => {
-        val last = list.last
-        last("baseURL").toString + "/artifact"
-      }
-      case None => throw new IllegalArgumentException("Parsing failed")
-      case other => throw new IllegalArgumentException(s"Unknown data structure: $other")
-    }
+    val result = ujson.read(content)
+    result.arr.last.obj("baseURL").str + "/artifact"
   }
 }

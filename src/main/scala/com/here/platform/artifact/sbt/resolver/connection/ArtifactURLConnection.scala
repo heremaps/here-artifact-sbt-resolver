@@ -31,7 +31,7 @@ import org.apache.http.message.BasicLineFormatter.formatStatusLine
   */
 final class ArtifactURLConnection(url: URL) extends HttpURLConnection(url) {
 
-  private[this] lazy val response = {
+  private lazy val response = {
     val artifact = toArtifact(url.toString)
     val groupHrnPrefix = registerExists(artifact.groupId, artifact.artifactId).groupHrnPrefix
     val resolvedUrl = rewriteUrl(groupHrnPrefix, artifact)

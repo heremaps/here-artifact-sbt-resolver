@@ -33,8 +33,6 @@ import org.apache.http.util.EntityUtils
 import org.apache.http.impl.client.HttpClientBuilder
 
 
-import scala.util.parsing.json.JSON
-
 case class RegisterResponse(groupId: String,
                             artifactId: String,
                             hrnPrefix: String,
@@ -97,18 +95,13 @@ object HttpUtils {
   }
 
   private def validatedAndParseRegister(content: String) = {
-    val result = JSON.parseFull(content)
-    result match {
-      case Some(map: Map[String, Any]) =>
-        RegisterResponse(
-          map("groupId").toString,
-          map("artifactId").toString,
-          map("hrnPrefix").toString,
-          map("groupHrnPrefix").toString
-        )
-      case None => throw new IllegalArgumentException("Parsing failed")
-      case other => throw new IllegalArgumentException(s"Unknown data structure: $other")
-    }
+    val result = ujson.read(content).obj
+    RegisterResponse(
+      result("groupId").str,
+      result("artifactId").str,
+      result("hrnPrefix").str,
+      result("groupHrnPrefix").str
+    )
   }
 
   private[artifact] def rewriteUrl(groupHrnPrefix: String, artifact: Artifact): String = {
@@ -118,10 +111,10 @@ object HttpUtils {
       ArtifactPropertiesResolver.resolveArtifactServiceUrl(hereTokenEndpointUrl, this.executeRequest(_))
 
     "%s/%s:%s:%s/%s".format(artifactServiceUrl,
-                            groupHrnPrefix,
-                            artifact.artifactId,
-                            artifact.version,
-                            artifact.file)
+      groupHrnPrefix,
+      artifact.artifactId,
+      artifact.version,
+      artifact.file)
   }
 
   private[artifact] def toArtifact(url: String): Artifact = {
@@ -146,8 +139,8 @@ object HttpUtils {
   }
 
   private[artifact] def executeRequest(
-      httpRequest: HttpUriRequest,
-      contentType: Option[String] = None): CloseableHttpResponse = {
+                                        httpRequest: HttpUriRequest,
+                                        contentType: Option[String] = None): CloseableHttpResponse = {
 
     setBearer(httpRequest)
     httpRequest.addHeader("Cache-control", "no-cache")

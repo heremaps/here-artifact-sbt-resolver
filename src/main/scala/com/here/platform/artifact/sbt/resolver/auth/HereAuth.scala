@@ -34,7 +34,7 @@ object HereAuth {
 
   private val hereCredentials = Credentials.loadHereCredentials()
 
-  private var token: String = _
+  private var token: String = null
 
   def getTokenEndpointUrl: String = hereCredentials.tokenEndpointUrl
 

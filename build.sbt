@@ -2,7 +2,7 @@ import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 import sbtrelease.Version
 
 ThisBuild / organization := "com.here.platform.artifact"
-ThisBuild / version := "2.0.4-SNAPSHOT"
+ThisBuild / version := "2.0.9-SNAPSHOT"
 
 name := "sbt-resolver"
 

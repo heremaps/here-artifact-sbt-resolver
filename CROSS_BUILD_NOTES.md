@@ -76,16 +76,6 @@ Published plugin coordinates:
 
 ```scala
 addSbtPlugin(
-  "com.here.platform.artifact" % "sbt-resolver-1" % "<version>"
+  "com.here.platform.artifact" % "sbt-resolver" % "<version>"
 )
 ```
-
-## Consumer project validation
-
-### sbt 2
-
-Validate the locally published plugin in a real sbt 2 consumer project and verify HERE artifact resolution works end-to-end.
-
-### sbt 1
-
-Validate the locally published plugin in an sbt 1 consumer project and verify HERE artifact resolution works end-to-end.

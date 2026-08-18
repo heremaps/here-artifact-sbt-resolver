@@ -30,7 +30,7 @@ object ArtifactResolverPlugin extends AutoPlugin {
   // This plugin will load automatically
   override def trigger: PluginTrigger = allRequirements
 
-  override def projectSettings: Seq[Setting[?]] = Seq(
+  override def projectSettings: Seq[Setting[_]] = Seq(
     Global / onLoad := {
       val previousOnLoad = (Global / onLoad).value
 

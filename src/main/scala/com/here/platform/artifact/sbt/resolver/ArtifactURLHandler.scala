@@ -108,7 +108,6 @@ final class ArtifactURLHandler extends URLHandler {
     val newUrl = rewriteUrl(groupHrnPrefix, artifact)
     val httpGet = new HttpGet(newUrl)
     val response = executeRequest(httpGet)
-    Message.info(s"Downloading HERE artifact: $src")
     assertStatusCode(
       response,
       s"Download of $newUrl to ${dest.getAbsoluteFile} has failed with ${response.getStatusLine.getStatusCode}. Reason: ${response.getStatusLine.getReasonPhrase}"

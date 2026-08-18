@@ -11,4 +11,5 @@ echo $GPG_PRIVATE_KEY | base64 -d > private.key
 gpg --import --batch private.key
 
 # Deploy to Maven Central
-sbt "publishSigned; sonaUpload; sonaRelease"
+sbt "+publishSigned"
+sbt "sonaUpload; sonaRelease"

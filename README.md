@@ -1,5 +1,5 @@
 [![Build Status](https://github.com/heremaps/here-artifact-sbt-resolver/actions/workflows/release.yml/badge.svg)](https://github.com/heremaps/here-artifact-sbt-resolver/actions?query=workflow%3ARelease+branch%3Amaster)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.here.platform.artifact/sbt-resolver/badge.svg)](https://search.maven.org/artifact/com.here.platform.artifact/sbt-resolver)
+[![Maven Central](https://img.shields.io/maven-central/v/com.here.platform.artifact/sbt-resolver.svg)](https://central.sonatype.com/artifact/com.here.platform.artifact/sbt-resolver)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 # HERE SBT Resolver for Workspace and Marketplace

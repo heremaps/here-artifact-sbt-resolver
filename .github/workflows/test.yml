@@ -36,4 +36,4 @@ jobs:
         key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt', 'project/**') }}
 
     - name: Test
-      run: sbt test
+      run: sbt +test

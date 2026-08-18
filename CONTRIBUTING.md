@@ -11,12 +11,22 @@ against the [GitHub project](https://github.com/heremaps/here-artifact-sbt-resol
 [ScalaTest](http://www.scalatest.org/) is used for unit-testing.
 Unit tests for different modules can be found in `/src/test/scala`.
 
+The SBT resolver plugin is cross-built for Scala 2.12 with SBT 1.x and Scala 3 with SBT 2.x.
+
 Use the following commands to run the unit tests:
 
-- `sbt test` to run all tests
-- `sbt -Dtest=ClassTest test` to run separate test-class
-- `sbt -Dtest=ClassTest#methodTest test` to run separate method of the test-class
-- `sbt -Dtest="com/here/your_package/**" test` to run separate package
+- `sbt +testFull` to run all tests for all supported Scala and SBT versions
+- `sbt -Dtest=ClassTest testFull` to run separate test-class
+- `sbt -Dtest=ClassTest#methodTest testFull` to run separate method of the test-class
+- `sbt -Dtest="com/here/your_package/**" testFull` to run separate package
+
+Scripted tests can be found in `/src/sbt-test`.
+They verify that the plugin can be loaded and initialized from real SBT projects for both SBT 1.x and SBT 2.x.
+
+Use the following commands to run the scripted tests:
+
+- `sbt "++2.12.20 ; scripted resolver/sbt1"` to test the plugin with Scala 2.12 and SBT 1.x
+- `sbt "++3.8.4 ; scripted resolver/sbt2"` to test the plugin with Scala 3 and SBT 2.x
 
 ## Coding Standards
 
@@ -80,9 +90,13 @@ Git has the `-s` flag that can sign a commit for you, see example below:
 
 `$ git commit -s -m 'README.md: Fix minor spelling mistake'`
 
-# Travis CI
-All opened pull requests are tested by Travis CI before they can be merged into the target branch.
-After the new code is pushed to `master` Travis will run the test suite again, build the artifacts and release them
+# GitHub Actions
+
+All opened pull requests are tested by GitHub Actions before they can be merged into the target branch.
+The test workflow runs the unit tests for all supported Scala and SBT versions and runs the scripted tests
+for both SBT 1.x and SBT 2.x.
+
+After the new code is pushed to `master`, GitHub Actions will build the artifacts and release them
 to Maven Central repository. The job will automatically increase Sbt Resolver patch version during this process.
 If you do not want your changes to trigger a release, add the `[skip release]` flag to your commit message,
 e.g., `git commit -s -m "[skip release] Fixed proxy configuration"`. We recommend this for example when you update

@@ -10,29 +10,28 @@ lazy val metadataSettings = Seq(
   projectInfo := ModuleInfo(
     nameFormal = "HERE SBT Resolver for Workspace and Marketplace",
     description = "The SBT Resolver is a Sbt plugin that can be referenced from the build.sbt of a Sbt project in order to consume/publish artifacts to the OLP Artifact storage.",
-    homepage = Some(url("http://here.com")),
+    homepage = Some(uri("http://here.com")),
     startYear = Some(2019),
     licenses = Vector(),
     organizationName = "HERE Europe B.V",
-    organizationHomepage = Some(url("http://here.com")),
+    organizationHomepage = Some(uri("http://here.com")),
     scmInfo = Some(ScmInfo(
       connection = "scm:git:https://github.com/heremaps/here-artifact-sbt-resolver.git",
       devConnection = "scm:git:git@github.com:heremaps/here-artifact-sbt-resolver.git",
-      browseUrl = url("https://github.com/heremaps/here-artifact-sbt-resolver")
+      browseUrl = uri("https://github.com/heremaps/here-artifact-sbt-resolver")
     )),
     developers = Vector(Developer(
       "here",
       "HERE Artifact Service Team",
       "ARTIFACT_SERVICE_SUPPORT@here.com",
-      url = url("https://github.com/heremaps")
+      url = uri("https://github.com/heremaps")
     ))
   )
 )
 
 lazy val root = (project in file("."))
+  .enablePlugins(SbtPlugin)
   .settings(metadataSettings)
-
-sbtPlugin := true
 
 crossScalaVersions := Seq("2.12.20", "3.8.4")
 
@@ -43,8 +42,14 @@ pluginCrossBuild / sbtVersion := {
   }
 }
 
+scriptedLaunchOpts := {
+  scriptedLaunchOpts.value ++
+    Seq("-Dplugin.version=" + version.value)
+}
+
 libraryDependencies ++= Seq(
   "com.here.account" % "here-oauth-client" % "0.4.20",
+  "com.lihaoyi" %% "ujson" % "4.4.3",
   "org.scalatest" %% "scalatest" % "3.2.20" % Test,
   "org.scalamock" %% "scalamock" % "7.5.5" % Test
 )
@@ -87,7 +92,7 @@ releaseNextVersion := {
 
 commands += Command.command("prepareRelease")((state: State) => {
   println("Preparing release...")
-  val projectState = Project extract state
+  val projectState = Project.extract(state)
   val customState = projectState.appendWithoutSession(
     Seq(
       releaseProcess := Seq[ReleaseStep](

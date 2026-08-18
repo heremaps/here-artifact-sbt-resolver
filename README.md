@@ -33,8 +33,11 @@ There are two options to override the path:
 - The second option is the environment variable `HERE_CREDENTIALS_FILE`.  The variable should contain the full file path to the `credentials.properties` file to be used. The variable is taken into account only if there is no system property provided.
 
 This version is compatible with:
- - Scala 2.11/2.12
- - SBT 1.x
+- Scala 2.12 with SBT 1.x
+- Scala 3 with SBT 2.x
+
+For Scala 2.11 support, use [SBT Resolver 2.0.35](https://central.sonatype.com/artifact/com.here.platform.artifact/sbt-resolver/2.0.35)
+or an earlier version released before the SBT 2.x migration.
 
 ## How to use it?
 This SBT resolver plugin is published on [Maven Central](https://search.maven.org/artifact/com.here.platform.artifact/sbt-resolver)

@@ -36,4 +36,10 @@ jobs:
         key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt', 'project/**') }}
 
     - name: Test
-      run: sbt +test
+      run: sbt +testFull
+
+    - name: Scripted test - sbt 1 / Scala 2.12
+      run: sbt "++2.12.20 ; scripted resolver/sbt1"
+
+    - name: Scripted test - sbt 2 / Scala 3
+      run: sbt "++3.8.4 ; scripted resolver/sbt2"

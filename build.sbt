@@ -81,7 +81,7 @@ releaseIgnoreUntrackedFiles := true
 releaseTagName := (ThisBuild / version).value
 
 releaseTagComment :=
-  s"Release ${(ThisBuild / version).value} from build ${sys.env.getOrElse("TRAVIS_BUILD_ID", "None")}"
+  s"Release ${(ThisBuild / version).value} from build ${sys.env.getOrElse("GITHUB_RUN_ID", "None")}"
 
 releaseNextVersion := {
   ver =>

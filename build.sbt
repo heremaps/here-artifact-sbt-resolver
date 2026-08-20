@@ -55,7 +55,7 @@ libraryDependencies ++= Seq(
 )
 
 useGpgAgent := false
-useGpgPinentry := true
+useGpgPinentry := false
 publishMavenStyle := true
 sbtPluginPublishLegacyMavenStyle := false
 pomIncludeRepository := { _ => false }

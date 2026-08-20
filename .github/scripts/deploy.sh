@@ -1,7 +1,6 @@
 #!/bin/bash
 set -ev
 
-export GPG_TTY=$(tty)
 export PGP_PASSPHRASE=$GPG_PASSPHRASE
 
 gpg --version

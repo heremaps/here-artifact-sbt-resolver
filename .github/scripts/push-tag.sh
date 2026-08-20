@@ -14,4 +14,6 @@ else
   exit 1
 fi
 
+sbt shutdown
+
 git push origin --tags

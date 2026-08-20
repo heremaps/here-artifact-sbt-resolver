@@ -14,6 +14,7 @@ else
   exit 1
 fi
 
+# Stop the sbt server so the deploy step starts a new one with the GPG environment
 sbt shutdown
 
 git push origin --tags
